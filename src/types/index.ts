@@ -32,3 +32,20 @@ export interface RideMetrics {
   costPerPassenger: Record<string, number>;
   totalDistance: number;
 }
+
+export interface Location {
+  lat: number;
+  lng: number;
+  address: string;
+}
+
+export interface RouteResult {
+startLocation: Location;
+  endLocation: Location;
+  distance: number; // Distance in kilometers
+}
+
+export interface NominatimResponse {
+  lat: string;
+  lon: string;
+}

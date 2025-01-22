@@ -6,6 +6,7 @@ import { router as rideRoutes } from './routes/rides.js';
 import { router as fuelPriceRoutes } from './routes/fuelPrices.js';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import proxyRoute from './proxyRoute.js'
 
 dotenv.config();
 
@@ -28,6 +29,8 @@ const corsOptions = {
 // Middleware
 app.use(cors(corsOptions));
 app.use(express.json());
+// Add the proxy route
+app.use('/api', proxyRoute);
 
 // Request logging middleware
 app.use((req, res, next) => {
@@ -47,6 +50,27 @@ app.use((err, req, res, next) => {
 // API Routes
 app.use('/api/rides', rideRoutes);
 app.use('/api/fuel-prices', fuelPriceRoutes);
+
+app.get('/api/directions', async (req, res) => {
+  const { start, end } = req.query;
+
+  try {
+    const response = await axios.get(
+      'https://api.openrouteservice.org/v2/directions/driving-car',
+      {
+        params: {
+          api_key: '5b3ce3597851110001cf62483628cb4427c2430b96c354f4d63058fd',
+          start,
+          end,
+        },
+      }
+    );
+    res.json(response.data);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send('Error fetching directions');
+  }
+});
 
 // Serve static files from the React app
 app.use(express.static(join(__dirname, '../dist')));

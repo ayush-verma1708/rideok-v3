@@ -1,6 +1,5 @@
-import React from 'react';
-import type { Route, Vehicle, Passenger } from '../types';
 import { IndianRupee, Users } from 'lucide-react';
+import type { Route, Vehicle, Passenger } from '../types';
 
 interface CostCalculatorProps {
   route: Route;
@@ -24,12 +23,21 @@ export default function CostCalculator({ route, vehicle, passengers }: CostCalcu
     (total, passenger) => total + passenger.distance,
     route.distance
   );
-
-  // Calculate total cost including all passengers
+  
+  // Check if total distance is valid
+  if (isNaN(totalDistance)) {
+    console.error('Invalid total distance:', totalDistance);
+  }
+  
   const totalCost = passengers.reduce(
     (total, passenger) => total + passenger.cost,
     baseCost
   );
+  
+  // Check if total cost is valid
+  if (isNaN(totalCost)) {
+    console.error('Invalid total cost:', totalCost);
+  }
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
@@ -60,7 +68,7 @@ export default function CostCalculator({ route, vehicle, passengers }: CostCalcu
             Passenger Breakdown
           </h4>
           
-          {passengers.map((passenger, index) => (
+          {passengers.map((passenger) => (
             <div key={passenger.id} className="mb-3 pl-4 border-l-2 border-gray-200">
               <div className="text-sm font-medium">{passenger.name}</div>
               <div className="text-sm text-gray-600">
@@ -80,16 +88,11 @@ export default function CostCalculator({ route, vehicle, passengers }: CostCalcu
         <div className="border-t pt-3 mt-3">
           <div className="flex justify-between items-center font-semibold">
             <span>Total Cost:</span>
-            <div className="flex items-center text-lg text-green-600">
-              <IndianRupee className="h-5 w-5 mr-1" />
+            <div className="flex items-center text-green-600">
+              <IndianRupee className="h-4 w-4 mr-1" />
               <span>{totalCost.toFixed(2)}</span>
             </div>
           </div>
-          {passengers.length > 0 && (
-            <p className="text-sm text-gray-500 mt-2">
-              *Costs optimized based on route overlap and shared journey
-            </p>
-          )}
         </div>
       </div>
     </div>

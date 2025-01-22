@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { Route, Vehicle, RideMetrics } from '../types';
+import type { Location, RouteResult,NominatimResponse, RideMetrics } from '../types';
 
 // Create axios instance with default config
 const axiosInstance = axios.create({
@@ -70,144 +70,88 @@ export const api = {
     }
   },
 
-  // async calculateRoute(start: string, end: string) {
-  //   try {
-  //     // First, get coordinates for both locations
-  //     const [startResponse, endResponse] = await Promise.all([
-  //       axiosInstance.get('https://nominatim.openstreetmap.org/search', {
-  //         params: {
-  //           q: start,
-  //           format: 'json',
-  //           limit: 1,
-  //           countrycodes: 'in'
-  //         }
-  //       }),
-  //       axiosInstance.get('https://nominatim.openstreetmap.org/search', {
-  //         params: {
-  //           q: end,
-  //           format: 'json',
-  //           limit: 1,
-  //           countrycodes: 'in'
-  //         }})
-  //     ]);
-
-  //     if (!startResponse.data.length || !endResponse.data.length) {
-  //       throw new Error('Could not find one or both locations');
-  //     }
-
-  //     const startLoc = startResponse.data[0];
-  //     const endLoc = endResponse.data[0];
-
-  //     // Calculate route using OpenRouteService
-  //     const routeResponse = await axiosInstance.get(
-  //       'https://api.openrouteservice.org/v2/directions/driving-car',
-  //       {
-  //         params: {
-  //           api_key: '5b3ce3597851110001cf62483628cb4427c2430b96c354f4d63058fd',
-  //           start: `${startLoc.lon},${startLoc.lat}`,
-  //           end: `${endLoc.lon},${endLoc.lat}`,
-  //         }
-  //       }
-  //     );
-
-  //     const distance = routeResponse.data.features[0].properties.segments[0].distance / 1000; // Convert to km
-
-  //     return {
-  //       startLocation: {
-  //         lat: parseFloat(startLoc.lat),
-  //         lng: parseFloat(startLoc.lon),
-  //         address: start
-  //       },
-  //       endLocation: {
-  //         lat: parseFloat(endLoc.lat),
-  //         lng: parseFloat(endLoc.lon),
-  //         address: end
-  //       },
-  //       distance
-  //     };
-  //   } catch (error) {
-  //     handleApiError(error);
-  //     // Fallback to a simpler distance calculation if API fails
-  //     return {
-  //       startLocation: {
-  //         lat: 0,
-  //         lng: 0,
-  //         address: start
-  //       },
-  //       endLocation: {
-  //         lat: 0,
-  //         lng: 0,
-  //         address: end
-  //       },
-  //       distance: 10 // Default 10km if calculation fails
-  //     };
-  //   }
-  // }
-  // Optimized calculateRoute function
-async calculateRoute(start: string, end: string) {
-  try {
-    // Fetch coordinates for start and end locations
-    const [startResponse, endResponse] = await Promise.all([
-      axiosInstance.get('https://nominatim.openstreetmap.org/search', {
-        params: {
-          q: start,
-          format: 'json',
-          limit: 1,
-          countrycodes: 'in'
-        }
-      }),
-      axiosInstance.get('https://nominatim.openstreetmap.org/search', {
-        params: {
-          q: end,
-          format: 'json',
-          limit: 1,
-          countrycodes: 'in'
-        }
-      })
-    ]);
-
-    if (!startResponse.data.length || !endResponse.data.length) {
-      throw new Error('Could not find one or both locations');
-    }
-
-    const startLoc = startResponse.data[0];
-    const endLoc = endResponse.data[0];
-
-    // Calculate route using OpenRouteService
-    const routeResponse = await axiosInstance.get(
-      'https://api.openrouteservice.org/v2/directions/driving-car',
-      {
-        params: {
-          api_key: '5b3ce3597851110001cf62483628cb4427c2430b96c354f4d63058fd',
-          start: `${startLoc.lon},${startLoc.lat}`,
-          end: `${endLoc.lon},${endLoc.lat}`
-        }
+   // Corrected method definition
+   async calculateRoute(start: string, end: string): Promise<RouteResult> {
+    try {
+      // Log start and end locations
+  
+      const [startResponse, endResponse] = await Promise.all([
+        axios.get<NominatimResponse[]>('https://nominatim.openstreetmap.org/search', {
+          params: {
+            q: start,
+            format: 'json',
+            limit: 1,
+            countrycodes: 'in',
+          },
+        }),
+        axios.get<NominatimResponse[]>('https://nominatim.openstreetmap.org/search', {
+          params: {
+            q: end,
+            format: 'json',
+            limit: 1,
+            countrycodes: 'in',
+          },
+        }),
+      ]);
+  
+      if (!startResponse.data.length || !endResponse.data.length) {
+        throw new Error('Could not find one or both locations');
       }
-    );
-
-    const distance = routeResponse.data.features[0].properties.segments[0].distance / 1000; // Convert to km
-
-    return {
-      startLocation: {
-        lat: parseFloat(startLoc.lat),
-        lng: parseFloat(startLoc.lon),
-        address: start
-      },
-      endLocation: {
-        lat: parseFloat(endLoc.lat),
-        lng: parseFloat(endLoc.lon),
-        address: end
-      },
-      distance
-    };
-  } catch (error) {
-    handleApiError(error);
-    return {
-      startLocation: { lat: 0, lng: 0, address: start },
-      endLocation: { lat: 0, lng: 0, address: end },
-      distance: 10 // Default 10km if calculation fails
-    };
+  
+      const startLocData = startResponse.data[0];
+      const endLocData = endResponse.data[0];
+  
+      // Log location data for both start and end locations
+  
+      const routeResponse = await axios.get('http://localhost:5000/api/directions', {
+        params: {
+          start: `${startLocData.lon},${startLocData.lat}`,
+          end: `${endLocData.lon},${endLocData.lat}`,
+        },
+      });
+  
+      // Log the entire routeResponse to inspect its structure
+  
+      // Check if features exist in the response
+      if (!routeResponse.data.features || !routeResponse.data.features.length) {
+        throw new Error('No route found');
+      }
+  
+      const routeFeature = routeResponse.data.features[0];  // Get the first feature
+  
+      const distance = routeFeature?.properties?.summary?.distance;
+  
+      // Check if distance is valid
+      if (typeof distance !== 'number' || isNaN(distance)) {
+        throw new Error('Invalid distance value received');
+      }
+  
+      const distanceInKm = distance / 1000; // Convert meters to kilometers
+  
+      return {
+        startLocation: {
+          lat: parseFloat(startLocData.lat),
+          lng: parseFloat(startLocData.lon),
+          address: start,
+        },
+        endLocation: {
+          lat: parseFloat(endLocData.lat),
+          lng: parseFloat(endLocData.lon),
+          address: end,
+        },
+        distance: distanceInKm,
+      };
+    } catch (error) {
+      console.error('Error in calculateRoute:', error);
+      return {
+        startLocation: { lat: 0, lng: 0, address: start },
+        endLocation: { lat: 0, lng: 0, address: end },
+        distance: 10, // Default distance if error occurs
+      };
+    }
   }
-}
-
+  
+  
+  
+  
 };

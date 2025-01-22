@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { MapPin } from 'lucide-react';
 import type { Route } from '../types';
 import AutocompleteSearch from './AutocompleteSearch';
 import axios from 'axios';
@@ -56,47 +55,7 @@ export default function RouteForm({ onRouteSubmit }: RouteFormProps) {
     }
   };
 
-  // const calculateDistance = async () => {
-  //   if (!locationData.startCoords || !locationData.endCoords) return;
 
-  //   const { startCoords, endCoords } = locationData;
-
-  //   try {
-  //     setLoading(true);
-  //     const response = await axios.get(
-  //       'https://api.openrouteservice.org/v2/directions/driving-car',
-  //       {
-  //         params: {
-  //           api_key: '5b3ce3597851110001cf62483628cb4427c2430b96c354f4d63058fd',
-  //           start: `${startCoords.lon},${startCoords.lat}`,
-  //           end: `${endCoords.lon},${endCoords.lat}`,
-  //         },
-  //       }
-  //     );
-
-  //     const distanceInMeters = response.data.features[0].properties.segments[0].distance;
-  //     const distanceInKm = distanceInMeters / 1000;
-
-  //     onRouteSubmit({
-  //       startLocation: {
-  //         lat: startCoords.lat,
-  //         lng: startCoords.lon,
-  //         address: locationData.startAddress
-  //       },
-  //       endLocation: {
-  //         lat: endCoords.lat,
-  //         lng: endCoords.lon,
-  //         address: locationData.endAddress
-  //       },
-  //       distance: distanceInKm
-  //     });
-  //   } catch (err) {
-  //     setError('Error calculating route. Please try again.');
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-// Optimized calculateDistance function
 const calculateDistance = async () => {
   if (!locationData.startCoords || !locationData.endCoords) return;
 
